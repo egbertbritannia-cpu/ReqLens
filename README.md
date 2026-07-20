@@ -1,163 +1,200 @@
-# Beyond Accuracy: Enhancing the Robustness of Software Requirements Classification against Paraphrasing using Paradigm-Complementary Hybrid Transformers
+﻿# Beyond Accuracy: Enhancing the Robustness of Software Requirements Classification against Paraphrasing using Paradigm-Complementary Hybrid Transformers
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/egbertbritannia-cpu/rbl-requirements-classification/blob/main/notebooks/01-EDA.ipynb)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-orange.svg)
+![Transformers](https://img.shields.io/badge/HuggingFace-Transformers-yellow.svg)
 
 ## Overview
 
-Current AI models achieve high accuracy on static requirement datasets, yet they remain brittle when stakeholders rephrase the same intent using different sentence structures — a common reality in Agile environments. This project proposes a **Hybrid Transformer architecture** that fuses **ModernBERT** (Masked Language Modeling) and **ELECTRA** (Replaced Token Detection) through an **Adaptive Gated Fusion** mechanism, exploiting the paradigm complementarity of their pre-training objectives to build a classifier that is both accurate *and* robust against paraphrasing.
+Current AI models achieve high accuracy on static requirement datasets, yet they remain brittle when stakeholders rephrase the same intent using different sentence structures — a common reality in Agile environments. This project proposes and compares multiple **Hybrid Transformer architectures** for software requirements classification (FR vs. NFR sub-types), with a focus on both accuracy and robustness.
 
-> Current data protocol: see [`docs/current_experiment_scope.md`](docs/current_experiment_scope.md). The original broader research plan is preserved in [`docs/original_research_plan.md`](docs/original_research_plan.md).
+The core contribution is the **SERF (Selective Ensemble Routing Framework)** — a hybrid ELECTRA+RoBERTa architecture that dynamically routes each input through either a fast single-encoder path or a full fusion path, depending on prediction confidence.
 
 ## Research Questions
 
 | # | Research Question | Focus |
 |---|-------------------|-------|
-| **RQ1** | Which model achieves the highest performance for FR vs NFR classification? | Compare the proposed Hybrid against traditional baselines and state-of-the-art LLMs |
-| **RQ2** | How does model robustness change when software requirements are paraphrased? | Measure consistency via a Robustness Score on LLM-generated paraphrase variants |
-| **Discussion** | What linguistic features cause black-box models to misclassify? | Exploratory XAI analysis (SHAP/Captum) on a curated subset of mispredictions |
+| **RQ1** | Which model achieves the highest performance for requirements classification? | Compare hybrid models against single-encoder baselines |
+| **RQ2** | How does model robustness change when software requirements are paraphrased? | Measure consistency via a Robustness Score on paraphrase variants |
+| **Discussion** | What linguistic features cause models to misclassify? | Exploratory XAI analysis on mispredictions |
 
-## Proposed Architecture
+## Architecture: SERF (Selective Ensemble Routing Framework)
 
-The core contribution is a **Gated Fusion** layer that dynamically learns how much to rely on each encoder per input:
+The proposed **ELECTRA+RoBERTa SERF** routes each input based on ELECTRA's prediction confidence:
 
 ```
-Input: Software Requirement Text
-         │
-    ┌────┴────┐
-    ▼         ▼
-ModernBERT  ELECTRA 
- (MLM)      (RTD)
-    │         │
-    h_MB      h_EL        ← CLS token embeddings (ℝ^768 each)
-    │         │
-    └────┬────┘
-         ▼
-  Adaptive Gated Fusion    ← g = σ(W_g · [h_MB; h_EL])
-   g⊙h_MB + (1-g)⊙h_EL        h_fusion ∈ ℝ^768
-         │
-         ▼
-  Dropout → Linear → Softmax
-         │
-         ▼
-  Predicted Class (FR / NFR)
+Input Text
+    |
+    v
+ELECTRA Confidence Router
+(tau threshold + delta margin + risky-class check)
+    |
+    +-- [High Confidence & Non-Risky] --> ELECTRA-only path
+    |       ELECTRA Encoder -> LayerNorm -> Dense(768) -> GELU -> Dropout -> Classifier
+    |
+    +-- [Low Confidence or Risky Class] --> Fusion path
+            ELECTRA Encoder --+
+                              +--> Concat(1536) -> LayerNorm -> FC(768) -> GELU -> Dropout -> Classifier
+            RoBERTa Encoder --+
+    |
+    v
+Softmax -> Final Prediction (multi-class NFR type / FR)
 ```
 
-> See the full architecture diagram in [`docs/architecture.png`](docs/architecture.png).
+| SERF Parameter | Search Space |
+|----------------|-------------|
+| tau (confidence threshold) | {0.70, 0.80, 0.85, 0.90} |
+| delta (margin threshold) | {0.15, 0.20} |
+| ELECTRA model | `google/electra-base-discriminator` |
+| RoBERTa model | `roberta-base` |
+| Frozen layers | Lower 8 transformer layers |
+| Learning rate | 2e-5 |
+| Epochs | 30 |
 
-## Baselines
+> See architecture diagrams in [`outputs/architecture/`](outputs/architecture/) and [`notebook_from_paper/SERF_architecture_numeric.drawio`](notebook_from_paper/SERF_architecture_numeric.drawio).
 
-| # | Model | Paradigm | Role |
-|---|-------|----------|------|
-| B1 | SVM + TF-IDF | Classical ML | Floor baseline |
-| B2 | BERT-base | Transfer Learning | Standard TL baseline |
-| B3 | RoBERTa-base | Transfer Learning | Strong TL baseline |
-| B4 | ModernBERT (single) | Transfer Learning | Ablation — isolate ModernBERT |
-| B5 | ELECTRA (single) | Transfer Learning | Ablation — isolate ELECTRA |
-| B6 | GPT-4o-mini (few-shot) | Large Language Model | SOTA LLM baseline |
-| **Ours** | **ModernBERT + ELECTRA (Gated Fusion)** | **Hybrid TL** | **Proposed model** |
+## Models Implemented
 
-## Datasets
+| Model | Type | Notes |
+|-------|------|-------|
+| BERT-base | Single Encoder | Transfer learning baseline |
+| RoBERTa-base | Single Encoder | Strong TL baseline |
+| ModernBERT | Single Encoder | Ablation |
+| ELECTRA-base | Single Encoder | Ablation |
+| BERT + RoBERTa Hybrid | Naive Fusion | Concatenation-based hybrid |
+| ModernBERT + ELECTRA Hybrid | Gated Fusion | Adaptive gated fusion |
+| **ELECTRA + RoBERTa SERF** | **Selective Ensemble** | **Proposed model** |
+| ELECTRA + RoBERTa SERF (w/ augmentation) | Selective Ensemble | Data augmentation variant |
 
-Four source datasets are merged into a unified binary classification benchmark (FR vs NFR):
+## Dataset
 
-| Dataset | Records | Source Label | Mapping to FR/NFR |
-|---------|---------|-------------|-------------------|
-| PROMISE (relabeled) | 622 | Multi-label binary (IsFunctional, SE, US, PE...) | `IsFunctional=1` → FR, else → NFR |
-| PROMISE (expanded) | 969 | Single `class` column (F, SE, US, PE...) | `class='F'` → FR, else → NFR |
-| DCAI24 | 3,482 | `Type` column (FR / NFR) | Direct mapping |
-| EARS | 9,677 | `EARS Type` (ubiquitous, state driven...) | All FR (used for imbalance handling) |
+The active dataset for all current experiments is **PROMISE Expanded**:
 
-> **Deduplication**: PROMISE-relabeled-NICE is the primary source; overlapping records in promise_exp are removed. EARS samples are selectively included to address class imbalance.
+| Property | Value |
+|----------|-------|
+| File | `data/exp/promise_exp.csv` |
+| Records | 969 |
+| Columns | `ProjectID`, `RequirementText`, `class` |
+| Labels | `F` (Functional), `SE`, `US`, `PE`, `LF`, `O`, `A`, `MN`, `SC`, `FT`, `L`, `PO` |
+| Split | Stratified 70 / 15 / 15 (train / validation / test) at runtime |
 
-**Robustness dataset**: *PROMISE-Robust* — paraphrased variants generated by LLMs for robustness evaluation (RQ2).
+Raw source files (for reference) are stored in `data/raw/`:
+- `PROMISE-relabeled-NICE.csv`
+- `promise_exp.csv`
+- `dcai24_src_dataset.xlsx`
+- `EARS Functional Requirements Complete Dataset.xlsx`
 
-## Results (Updated Continuously)
-
-| Model | Accuracy | Weighted F1 | Robustness Score | Status |
-|-------|----------|-------------|-----------------|--------|
-| SVM (TF-IDF) | — | — | — | ⏳ Pending |
-| BERT-base | — | — | — | ⏳ Pending |
-| RoBERTa-base | — | — | — | ⏳ Pending |
-| ModernBERT (single) | — | — | — | ⏳ Pending |
-| ELECTRA (single) | — | — | — | ⏳ Pending |
-| GPT-4o-mini (few-shot) | — | — | — | ⏳ Pending |
-| **Hybrid (Ours)** | — | — | — | ⏳ Pending |
+> **Note:** The current paper scope uses **only** `data/exp/promise_exp.csv`. The broader multi-dataset merged corpus (DCAI24, EARS) from the original plan is preserved in `data/raw/` but is not active for current experiments.
 
 ## Project Structure
 
 ```
 rbl-requirements-classification/
-├── configs/                              # Hyperparameter configs per model
-├── data/
-│   ├── raw/                              # Original datasets (gitignored)
-│   ├── paraphrased/                      # LLM-generated paraphrases for RQ2
-│   └── processed/                        # Cleaned, merged & split data
-├── notebooks/
-│   ├── 01-EDA.ipynb                      # Exploratory Data Analysis
-│   ├── 02-data-merging.ipynb             # Label unification & dataset merging
-│   ├── 03-SVM-baseline.ipynb             # SVM + TF-IDF baseline
-│   ├── 04-ModernBERT.ipynb               # ModernBERT ablation
-│   ├── 05-ELECTRA.ipynb                  # ELECTRA ablation
-│   ├── 06-Hybrid-GatedFusion.ipynb       # Proposed Hybrid model
-│   ├── 07-LLM-fewshot.ipynb              # GPT-4o-mini few-shot baseline
-│   ├── 08-paraphrase-generation.ipynb    # Generate PROMISE-Robust
-│   ├── 09-robustness-evaluation.ipynb    # Robustness testing (RQ2)
-│   └── 10-comparison.ipynb              # Final comparison & visualization
-├── src/
-│   ├── preprocessing.py                  # Text cleaning & label unification
-│   ├── dataset.py                        # PyTorch Dataset classes
-│   ├── models/                           # One file per model architecture
-│   │   ├── svm_classifier.py
-│   │   ├── modernbert_classifier.py
-│   │   ├── electra_classifier.py
-│   │   └── hybrid_gated_fusion.py        # Core contribution
-│   ├── evaluation.py                     # Metrics: F1, Accuracy, Robustness Score
-│   └── utils.py                          # Training cost tracker, helpers
-├── results/
-│   ├── metrics/                          # Score CSVs per model
-│   ├── plots/                            # Comparison charts
-│   └── checkpoints/                      # Saved weights (gitignored)
-├── prompts/                              # LLM prompt templates
-├── papers/                               # Literature review notes
-├── docs/                                 # Research docs & architecture diagram
-├── requirements.txt
-└── .gitignore
+|-- code/                             # Exploratory / development notebooks
+|   |-- Bert.ipynb
+|   |-- ELECTRA.ipynb
+|   |-- ModernBERT.ipynb
+|   |-- RoBerta_origin_tested.ipynb
+|   |-- Hybrid_modernBERT_ELECTRA.ipynb
+|   |-- Hybrid_BERT_RoBERTa.ipynb
+|   |-- ELECTRA_+_RoBERTa_hybrid.ipynb
+|   |-- ELECTRA_RoBERTa_SERF_with_augmentation.ipynb
+|   `-- ELECTRA_RoBERTa_SERF_without_augmentation.ipynb
+|
+|-- model-training/                   # Full training runs (on GPU / Colab)
+|   |-- Bert.ipynb
+|   |-- ELECTRA.ipynb
+|   |-- ModernBERT_noFreeze.ipynb
+|   |-- RoBerta_more_specific_data.ipynb
+|   |-- Hybrid_modernBERT_ELECTRA.ipynb
+|   |-- Hybrid_modernBERT_ELECTRA_2e_1config.ipynb
+|   |-- Hybrid_BERT_RoBERTa.ipynb
+|   |-- ELECTRA_+_RoBERTa_hybrid_new.ipynb
+|   |-- ELECTRA_RoBERTa_SERF_with_augmentation.ipynb
+|   `-- ELECTRA_RoBERTa_SERF_without_augmentation.ipynb
+|
+|-- notebook_from_paper/              # Reference notebooks & architecture diagrams
+|   |-- Bert.ipynb
+|   |-- RoBerta.ipynb
+|   |-- Hybrid_BERT_RoBERTa.ipynb
+|   |-- Hybrid_BERT_RoBERTa_without_augmentation.ipynb
+|   |-- SERF_architecture_numeric.drawio
+|   `-- SERF_workflow_from_image.drawio / .png
+|
+|-- data/
+|   |-- exp/                          # Active experiment dataset
+|   |   `-- promise_exp.csv
+|   `-- raw/                          # Source/archive files
+|       |-- PROMISE-relabeled-NICE.csv
+|       |-- promise_exp.csv
+|       |-- dcai24_src_dataset.xlsx
+|       `-- EARS Functional Requirements Complete Dataset.xlsx
+|
+|-- outputs/
+|   |-- architecture/                 # Architecture diagrams
+|   |-- new_modified_analysis/        # SERF architecture docs & analysis scripts
+|   `-- docx_to_latex_preview*/       # Paper conversion artifacts
+|
+|-- docs/                             # Paper drafts & diagrams
+|   |-- FullPaper_RBL AI classification.docx
+|   |-- RBL_Latex_Paper/              # LaTeX source
+|   `-- diagram.drawio
+|
+|-- requirements.txt
+`-- .gitignore
 ```
 
 ## Getting Started
 
-### Google Colab (Recommended)
-1. Click the **Open in Colab** badge above
-2. Select **Runtime → Change runtime type → GPU (T4)**
-3. Run all cells
+### Prerequisites
+
+- Python 3.10+
+- CUDA-compatible GPU recommended (or Google Colab with T4/A100)
 
 ### Local Setup
+
 ```bash
 git clone https://github.com/egbertbritannia-cpu/rbl-requirements-classification.git
 cd rbl-requirements-classification
 pip install -r requirements.txt
-jupyter notebook
 ```
 
-## Research Timeline
+### Running Experiments
 
-| Week | Task | Deliverables |
-|------|------|-------------|
-| 1–3 | Literature review, dataset preparation, label unification | Merged dataset, EDA notebook |
-| 4 | SVM baseline + evaluation pipeline | Metrics infrastructure, SVM results |
-| 5 | Fine-tune ModernBERT (single) + ELECTRA (single) | Ablation baselines |
-| 6 | Implement Gated Fusion Hybrid + fine-tune | Core model results |
-| 7 | LLM baselines (GPT-4o-mini) + paraphrase generation | PROMISE-Robust dataset |
-| 8 | Robustness evaluation + Discussion (XAI on small sample) | RQ2 results, error analysis |
-| 9 | Write paper + package code for reproducibility | Final submission |
+1. **Exploratory notebooks** — start from `code/` for development and quick iteration
+2. **Full training runs** — use the notebooks in `model-training/` on a GPU runtime
+3. **Reference implementations** — see `notebook_from_paper/` for the paper-aligned versions
+
+### Google Colab (Recommended for Training)
+
+1. Upload any notebook from `model-training/` to Google Colab
+2. Select **Runtime → Change runtime type → GPU (T4 or A100)**
+3. Mount Google Drive if needed and run all cells
+
+## Dependencies
+
+| Category | Packages |
+|----------|---------|
+| Data & ML | `pandas`, `numpy`, `scikit-learn`, `openpyxl` |
+| Deep Learning | `torch>=2.0`, `transformers==4.40.1`, `datasets`, `accelerate` |
+| NLP | `nltk`, `spacy` |
+| Explainability | `shap`, `captum` |
+| Experiment Tracking | `wandb` |
+| LLM Baseline | `openai>=1.40` |
+| Visualization | `matplotlib`, `seaborn` |
+
+Install all with:
+```bash
+pip install -r requirements.txt
+```
 
 ## Key References
 
-- Warner et al. (2024) — ModernBERT: A Decoder-Only Model for Masked Language Modeling
-- Clark et al. (2020) — ELECTRA: Pre-training Text Encoders as Discriminators Rather Than Generators
-- Shafikuzzaman et al. (2025) — On the Effectiveness of Zero-Shot and Few-Shot Pretrained Language Models for Software Requirement Classification
+- PROMISE NFR dataset: Kurtanovic & Maalej (2017)
+- ELECTRA: Clark et al. (2020) — `google/electra-base-discriminator`
+- RoBERTa: Liu et al. (2019) — `roberta-base`
+- ModernBERT: Warner et al. (2024)
 
 ## License
 
