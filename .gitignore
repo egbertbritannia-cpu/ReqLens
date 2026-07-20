@@ -203,3 +203,12 @@ api_keys.txt
 
 # Papers (do not push pdfs)
 papers/
+
+# Large binary / generated output folders
+docs/
+outputs/
+tmp/
+
+# drawio backup files
+*.drawio.bkp
+.$*.drawio.bkp
