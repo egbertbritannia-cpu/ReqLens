@@ -12,6 +12,8 @@
 
 Kế hoạch cải thiện paper SERF sau phản biện EAI FISAT 2026, do **Quách Thế Dương** thực hiện. Quản lý công việc, tiến độ, phản biện, thí nghiệm và các mốc nghiên cứu trực tiếp trên Google Sheets — không cập nhật trạng thái trùng lặp bằng Markdown.
 
+**AI operating constraints:** [AGENTS.md](AGENTS.md) — các phiên AI tự động phải đọc và tuân thủ trước khi chỉnh sửa code, manuscript hoặc cập nhật tracking.
+
 ## Overview
 
 Current AI models achieve high accuracy on static requirement datasets, yet they remain brittle when stakeholders rephrase the same intent using different sentence structures — a common reality in Agile environments. This project proposes and compares multiple **Hybrid Transformer architectures** for software requirements classification (FR vs. NFR sub-types), with a focus on both accuracy and robustness.
