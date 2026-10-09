@@ -7,6 +7,10 @@
 **Current stage:** Recovery after EAI FISAT 2026 rejection (decision received 2026-10-04).  
 **Schedule:** W1–W8 are *relative sprints*, not committed calendar dates.
 
+## Live Research Tracking
+
+**Google Sheets (canonical live task status):** [research-tracking — SERF solo plan](https://docs.google.com/spreadsheets/d/1le9GUaezNO4KWGSYG__CJDPCaszxJ7c8PzinLgGXFLc/edit). It contains the 28-task single-owner checklist plus Dashboard, Reviewer_Responses, Milestone_Roadmap, Experiment_Metrics, RQ_Specification, Benchmark_Parameters and Owner_Protocol tabs. GitHub markdown is a versioned companion only; updates between Sheets and Markdown are **manual, not automatically synchronized**.
+
 ## Progress
 
 - Done: **1 / 28** (review intake/mapping only)
