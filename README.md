@@ -5,6 +5,11 @@
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-orange.svg)
 ![Transformers](https://img.shields.io/badge/HuggingFace-Transformers-yellow.svg)
 
+
+## Solo Project Tracking — SERF Paper Recovery
+
+Following the EAI FISAT 2026 rejection, the one-person recovery and resubmission work is tracked in **[tracking/README.md](tracking/README.md)** (owner: Quach The Duong). The tracker covers routing ablations, matched baselines, uncertainty, runtime cost, generalization, reproducibility, and manuscript revision. The companion spreadsheet is distributed separately and is not automatically synchronized with GitHub.
+
 ## Overview
 
 Current AI models achieve high accuracy on static requirement datasets, yet they remain brittle when stakeholders rephrase the same intent using different sentence structures — a common reality in Agile environments. This project proposes and compares multiple **Hybrid Transformer architectures** for software requirements classification (FR vs. NFR sub-types), with a focus on both accuracy and robustness.
