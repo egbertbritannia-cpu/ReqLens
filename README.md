@@ -6,14 +6,11 @@
 ![Transformers](https://img.shields.io/badge/HuggingFace-Transformers-yellow.svg)
 
 
-## Solo Project Tracking — SERF Paper Recovery
+## Research Tracking
 
-Following the EAI FISAT 2026 rejection, the one-person recovery and resubmission work is managed by Quach The Duong in:
+**[Mở Research Tracking — Google Sheets](https://docs.google.com/spreadsheets/d/1le9GUaezNO4KWGSYG__CJDPCaszxJ7c8PzinLgGXFLc/edit)**
 
-- **[Research Tracking — Google Sheets (live task status)](https://docs.google.com/spreadsheets/d/1le9GUaezNO4KWGSYG__CJDPCaszxJ7c8PzinLgGXFLc/edit)** — 28-task plan, reviewer responses, experiments, milestones, and dashboard.
-- **[Research tracking — GitHub documentation](tracking/README.md)** — versioned work plan, reviewer-to-task mapping, and research stage gates.
-
-The sheet is the source of truth for live task status. GitHub documentation is versioned separately; status changes are not automatically synchronized.
+Kế hoạch cải thiện paper SERF sau phản biện EAI FISAT 2026, do **Quách Thế Dương** thực hiện. Quản lý công việc, tiến độ, phản biện, thí nghiệm và các mốc nghiên cứu trực tiếp trên Google Sheets — không cập nhật trạng thái trùng lặp bằng Markdown.
 
 ## Overview
 
