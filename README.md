@@ -8,7 +8,12 @@
 
 ## Solo Project Tracking — SERF Paper Recovery
 
-Following the EAI FISAT 2026 rejection, the one-person recovery and resubmission work is tracked in **[tracking/README.md](tracking/README.md)** (owner: Quach The Duong). The tracker covers routing ablations, matched baselines, uncertainty, runtime cost, generalization, reproducibility, and manuscript revision. The companion spreadsheet is distributed separately and is not automatically synchronized with GitHub.
+Following the EAI FISAT 2026 rejection, the one-person recovery and resubmission work is managed by Quach The Duong in:
+
+- **[Research Tracking — Google Sheets (live task status)](https://docs.google.com/spreadsheets/d/1le9GUaezNO4KWGSYG__CJDPCaszxJ7c8PzinLgGXFLc/edit)** — 28-task plan, reviewer responses, experiments, milestones, and dashboard.
+- **[Research tracking — GitHub documentation](tracking/README.md)** — versioned work plan, reviewer-to-task mapping, and research stage gates.
+
+The sheet is the source of truth for live task status. GitHub documentation is versioned separately; status changes are not automatically synchronized.
 
 ## Overview
 
