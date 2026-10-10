@@ -65,3 +65,29 @@ A schema-valid payload is **not independently validated research evidence**: has
 **Next safe engineering step:** Implement an opt-in, non-destructive export hook after retrieving/verifying the original checkpoints (or after explicit authorization for a new run). Preserve `source_row_index` before filtering; export full validation/test selector and fusion outputs; run `validate_cache`, then evaluate fixed ablation modes with repeated matched-random draws and per-seed paired analysis. If source checkpoints remain absent, report **BLOCKED** instead of treating historical aggregate notebook outputs as predictions.
 
 Do not mark routing experiments complete merely because their validator/tests exist.
+
+## 6. Dataset split reconstruction check (2026-10-10)
+
+**Method and limitation:** The private original `data/exp/promise_exp.csv` was fetched and parsed using the connected GitHub API (Git blob `9f91b2c5a761e648311bddf306f9cd67ba7650ff`, 111,660 bytes). The 969 source rows all contain nonempty requirement text and valid class labels, and no class is a singleton. Because the Python runtime could not directly download the private CSV bytes, the **ordered original class column** was projected into a local CSV with nonempty placeholder text and the same raw row positions. The committed `experiments/routing/split_provenance.py` was then run on that projection, preserving every class and source row's stratification position. This is an **exact split-membership reconstruction conditional on the verified nonempty-row property, NOT a direct execution on the original CSV bytes**. The local projection SHA-256 must not be confused with the SHA-256 of the original dataset.
+
+Code/provenance checked: `split_provenance.py`, `tests/test_split_provenance.py`, and the saved output in `model-training/ELECTRA_RoBERTa_SERF_without_augmentation.ipynb` (Git blob `695b8a723c2bd669c1263c494fea7f6e18b127a5`). The script's two sequential stratified `train_test_split` operations use `test_size=0.30`, then `test_size=0.50`, each with `random_state=42`. **All four complete, train, validation and test per-class distributions match the legacy notebook's saved output.**
+
+| Class | Complete | Train | Validation | Test |
+| --- | ---: | ---: | ---: | ---: |
+| A | 31 | 22 | 4 | 5 |
+| F | 444 | 311 | 66 | 67 |
+| FT | 18 | 13 | 3 | 2 |
+| L | 15 | 11 | 2 | 2 |
+| LF | 49 | 34 | 7 | 8 |
+| MN | 24 | 17 | 4 | 3 |
+| O | 77 | 54 | 11 | 12 |
+| PE | 67 | 47 | 10 | 10 |
+| PO | 12 | 8 | 2 | 2 |
+| SC | 22 | 15 | 4 | 3 |
+| SE | 125 | 87 | 19 | 19 |
+| US | 85 | 59 | 13 | 13 |
+| **Total** | **969** | **678** | **145** | **146** |
+
+**Computed sample index order fingerprints:** SHA-256 of ASCII comma-separated, zero-based source row indices for train = `f5f71b6e916f2a713e02931d83fa40a7e6da59ccd43b77032ec564bb29580d00`, validation = `7b65d735dda69c70c1a01b272386839d342c71deb1938ff2969751faf2487b20`, test = `3962006bad5e1fd1cab4fe772b9730be879841bc872fe862695c2644240de4d5`. These are **split-membership fingerprints**, not dataset or checkpoint hashes.
+
+**Checks:** local CPU `unittest` 5/5 PASS for split-provenance suite, `py_compile` PASS. Notebook saved class-distribution cross-check PASS. No original model checkpoints, saved per-sample predictions, GPU inference, P06-P09 ablation or independent full original-file execution took place. Research evidence gate remains **BLOCKED** on original model checkpoints and aligned prediction export. Original scores and manuscript untouched.
