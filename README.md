@@ -1,4 +1,4 @@
-﻿# Beyond Accuracy: Enhancing the Robustness of Software Requirements Classification against Paraphrasing using Paradigm-Complementary Hybrid Transformers
+﻿# ReqLens: Towards Robust Software Requirements Classification under Paraphrasing
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
