@@ -25,8 +25,8 @@ _FIELDS = {
 def validate_cache(payload):
     """Return rows for route_ablation.evaluate_cached, fail closed otherwise.
 
-    Every record needs source_row_index from the *original* 1-based CSV body
-    (index 0 = first data row). IDs are deterministically derived from dataset
+    Every record needs source_row_index from the *original* CSV data rows
+    (index 0 = first row after the header). IDs are deterministically derived from dataset
     digest and raw row position; ProjectID alone is not a unique sample ID.
     """
     if not isinstance(payload, dict) or not isinstance(payload.get("metadata"), dict):
