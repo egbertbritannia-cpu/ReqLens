@@ -212,3 +212,9 @@ tmp/
 # drawio backup files
 *.drawio.bkp
 .$*.drawio.bkp
+
+# Local research administration
+/AGENTS.md
+/plan/
+/tracking/
+/audits/

@@ -6,14 +6,6 @@
 ![Transformers](https://img.shields.io/badge/HuggingFace-Transformers-yellow.svg)
 
 
-## Research Tracking
-
-**[Mở Research Tracking — Google Sheets](https://docs.google.com/spreadsheets/d/1le9GUaezNO4KWGSYG__CJDPCaszxJ7c8PzinLgGXFLc/edit)**
-
-Kế hoạch cải thiện paper SERF sau phản biện EAI FISAT 2026, do **Quách Thế Dương** thực hiện. Quản lý công việc, tiến độ, phản biện, thí nghiệm và các mốc nghiên cứu trực tiếp trên Google Sheets — không cập nhật trạng thái trùng lặp bằng Markdown.
-
-**AI operating constraints:** [AGENTS.md](AGENTS.md) — các phiên AI tự động phải đọc và tuân thủ trước khi chỉnh sửa code, manuscript hoặc cập nhật tracking.
-
 ## ICIIT 2027 Data and Code Availability
 
 For the ICIIT 2027 submission on Selective ELECTRA–RoBERTa Fusion, the public repository provides the PROMISE_EXP dataset and legacy project code. The [CSV used as the data source](https://github.com/egbertbritannia-cpu/ReqLens/blob/7889d8205370da91d759441cf75a62219298b7f3/data/exp/promise_exp.csv) and [legacy repository snapshot](https://github.com/egbertbritannia-cpu/ReqLens/tree/7889d8205370da91d759441cf75a62219298b7f3) are pinned to the same commit. The public CSV and the K1 artifact copy contain the same records in the same order. Their LF and CRLF line endings, respectively, produce different SHA-256 hashes. See the [dataset notes](data/README.md) for both hashes.
