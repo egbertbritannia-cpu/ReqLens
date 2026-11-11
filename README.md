@@ -14,13 +14,19 @@ Kế hoạch cải thiện paper SERF sau phản biện EAI FISAT 2026, do **Qu�
 
 **AI operating constraints:** [AGENTS.md](AGENTS.md) — các phiên AI tự động phải đọc và tuân thủ trước khi chỉnh sửa code, manuscript hoặc cập nhật tracking.
 
-## Overview
+## ICIIT 2027 Data and Code Availability
+
+For the ICIIT 2027 submission on Selective ELECTRA–RoBERTa Fusion, the public repository provides the PROMISE_EXP dataset and legacy project code. The [CSV used as the data source](https://github.com/egbertbritannia-cpu/ReqLens/blob/7889d8205370da91d759441cf75a62219298b7f3/data/exp/promise_exp.csv) and [legacy repository snapshot](https://github.com/egbertbritannia-cpu/ReqLens/tree/7889d8205370da91d759441cf75a62219298b7f3) are pinned to the same commit. The public CSV and the K1 artifact copy contain the same records in the same order. Their LF and CRLF line endings, respectively, produce different SHA-256 hashes. See the [dataset notes](data/README.md) for both hashes.
+
+The K1 runner, pinned configuration, split records, predictions, logs, and offline checker are retained in a local reproduction package that has yet to be publicly released. The checker recomputes metrics and descriptive tables from saved predictions and summarizes saved inference measurements. This check does not rerun training, inference timing, or bootstrap intervals. Model checkpoints remain private.
+
+## Legacy Project Overview
 
 Current AI models achieve high accuracy on static requirement datasets, yet they remain brittle when stakeholders rephrase the same intent using different sentence structures — a common reality in Agile environments. This project proposes and compares multiple **Hybrid Transformer architectures** for software requirements classification (FR vs. NFR sub-types), with a focus on both accuracy and robustness.
 
 The core contribution is the **SERF (Selective Ensemble Routing Framework)** — a hybrid ELECTRA+RoBERTa architecture that dynamically routes each input through either a fast single-encoder path or a full fusion path, depending on prediction confidence.
 
-## Research Questions
+## Legacy Research Questions
 
 | # | Research Question | Focus |
 |---|-------------------|-------|
@@ -86,7 +92,7 @@ The active dataset for all current experiments is **PROMISE Expanded**:
 | Records | 969 |
 | Columns | `ProjectID`, `RequirementText`, `class` |
 | Labels | `F` (Functional), `SE`, `US`, `PE`, `LF`, `O`, `A`, `MN`, `SC`, `FT`, `L`, `PO` |
-| Split | Stratified 70 / 15 / 15 (train / validation / test) at runtime |
+| Split | Legacy notebooks use a stratified 70 / 15 / 15 split at runtime. K1 uses random stratified and project-disjoint splits without augmentation. |
 
 Raw source files (for reference) are stored in `data/raw/`:
 - `PROMISE-relabeled-NICE.csv`
@@ -164,12 +170,12 @@ rbl-requirements-classification/
 ### Local Setup
 
 ```bash
-git clone https://github.com/egbertbritannia-cpu/rbl-requirements-classification.git
-cd rbl-requirements-classification
+git clone https://github.com/egbertbritannia-cpu/ReqLens.git
+cd ReqLens
 pip install -r requirements.txt
 ```
 
-### Running Experiments
+### Running the Legacy Notebooks
 
 1. **Exploratory notebooks** — start from `code/` for development and quick iteration
 2. **Full training runs** — use the notebooks in `model-training/` on a GPU runtime
